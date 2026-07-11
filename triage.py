@@ -1,6 +1,6 @@
 # triage.py — AI-Assisted SOC Alert Triage Assistant
-# Phase 1: VirusTotal enrichment + reporting. AI triage is built but dormant
-# until an Anthropic key is added to .env.
+# Reads Sysmon-style events, enriches indicators against VirusTotal, and uses
+# Claude to produce a Tier 1 triage summary for each event.
 
 import json
 import os
@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()  # read the .env file
 
 VT_KEY = os.getenv("VIRUSTOTAL_API_KEY")
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY")  # will be None for now — that's fine
+ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 
 def load_events(filename):
@@ -47,9 +47,9 @@ def check_virustotal(indicator, indicator_type):
 
 
 def ai_triage(event, vt_result):
-    """Ask Claude to triage one event. Dormant until ANTHROPIC_KEY is set."""
+    """Ask Claude to triage one event. Requires ANTHROPIC_API_KEY in .env."""
     if not ANTHROPIC_KEY:
-        return "[AI triage disabled — add ANTHROPIC_API_KEY to .env to enable]"
+        return "[AI triage skipped — no ANTHROPIC_API_KEY found in .env]"
 
     import anthropic
     client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
@@ -87,8 +87,8 @@ def main():
     for i, event in enumerate(events, start=1):
         print(f"--- Triaging event {i} ({event['technique']}) ---")
 
-        vt = check_virustotal(event["src_ip"], "ip")
-        if event["file_hash"]:
+        vt = check_virustotal(event.get("src_ip"), "ip")
+        if event.get("file_hash"):
             vt_hash = check_virustotal(event["file_hash"], "hash")
             vt = f"IP: {vt} | Hash: {vt_hash}"
 
